@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronômetros Coloridos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header-bar {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .time-input input {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            width: 120px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            outline: none;
+        }
+
+        .timers-container {
+            height: calc(100vh - 70px);
+            padding: 2.5%;
+        }
+
+        .timers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2%;
+            height: 100%;
+            width: 100%;
+        }
+
+        .timer {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+        }
+
+        .timer:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .timer-number {
+            font-size: clamp(24px, 4vw, 36px);
+            font-weight: bold;
+            color: white;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .timer-display {
+            font-size: clamp(48px, 8vw, 80px);
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+        }
+
+        /* Responsividade para diferentes tamanhos de tela */
+        @media (max-width: 1400px) {
+            .timers-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .timers-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 900px) {
+            .timers-grid {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 1.5%;
+            }
+            
+            .timers-container {
+                padding: 1.5%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .timers-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1%;
+            }
+            
+            .timers-container {
+                padding: 1%;
+            }
+            
+            .timer {
+                min-height: 150px;
+                border-radius: 15px;
+            }
+            
+            .header-bar {
+                padding: 10px 20px;
+            }
+            
+            .time-input input {
+                width: 100px;
+                font-size: 16px;
+                padding: 10px 15px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .timers-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .timer {
+                min-height: 120px;
+            }
+        }
+
+        /* Para telas muito grandes */
+        @media (min-width: 1800px) {
+            .timers-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 1.5%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="time-input">
+            <input type="number" id="targetTime" value="5" min="1" max="60">
+        </div>
+    </div>
+
+    <div class="timers-container">
+        <div class="timers-grid" id="timersGrid">
+            <!-- Os cronômetros serão gerados aqui -->
+        </div>
+    </div>
+
+    <script>
+        class Timer {
+            constructor(id) {
+                this.id = id;
+                this.startTime = 0;
+                this.elapsedTime = 0;
+                this.isRunning = false;
+                this.intervalId = null;
+                this.state = 'stopped'; // stopped, running, paused
+                this.alertPlayed70 = false;
+                this.alertPlayed95 = false;
+                
+                this.createElement();
+                this.updateDisplay();
+            }
+
+            createElement() {
+                const timer = document.createElement('div');
+                timer.className = 'timer';
+                timer.style.background = this.getGradientColor(0);
+                timer.innerHTML = `
+                    <div class="timer-number">${this.id}</div>
+                    <div class="timer-display" id="display-${this.id}">00:00</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-${this.id}"></div>
+                    </div>
+                `;
+                
+                timer.addEventListener('click', () => this.handleClick());
+                document.getElementById('timersGrid').appendChild(timer);
+                this.element = timer;
+            }
+
+            handleClick() {
+                if (this.state === 'stopped') {
+                    this.start();
+                } else if (this.state === 'running') {
+                    this.pause();
+                } else if (this.state === 'paused') {
+                    this.reset();
+                }
+            }
+
+            start() {
+                this.state = 'running';
+                this.startTime = Date.now() - this.elapsedTime;
+                this.intervalId = setInterval(() => this.tick(), 100);
+            }
+
+            pause() {
+                this.state = 'paused';
+                clearInterval(this.intervalId);
+            }
+
+            reset() {
+                this.state = 'stopped';
+                this.elapsedTime = 0;
+                this.alertPlayed70 = false;
+                this.alertPlayed95 = false;
+                this.updateDisplay();
+                this.element.style.background = this.getGradientColor(0);
+                this.updateProgressBar(0);
+            }
+
+            tick() {
+                this.elapsedTime = Date.now() - this.startTime;
+                this.updateDisplay();
+                
+                const targetTimeMs = this.getTargetTime() * 60 * 1000;
+                const percentage = (this.elapsedTime / targetTimeMs) * 100;
+                
+                this.updateProgressBar(Math.min(percentage, 100));
+                this.element.style.background = this.getGradientColor(percentage);
+                
+                // Alertas sonoros
+                if (percentage >= 70 && !this.alertPlayed70) {
+                    this.playAlert();
+                    this.alertPlayed70 = true;
+                }
+                
+                if (percentage >= 95 && !this.alertPlayed95) {
+                    this.playAlert();
+                    this.alertPlayed95 = true;
+                }
+            }
+
+            updateDisplay() {
+                const minutes = Math.floor(this.elapsedTime / 60000);
+                const seconds = Math.floor((this.elapsedTime % 60000) / 1000);
+                const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                document.getElementById(`display-${this.id}`).textContent = display;
+            }
+
+            updateProgressBar(percentage) {
+                const progressFill = document.getElementById(`progress-${this.id}`);
+                progressFill.style.width = `${Math.min(percentage, 100)}%`;
+                progressFill.style.background = this.getProgressColor(percentage);
+            }
+
+            getTargetTime() {
+                return parseInt(document.getElementById('targetTime').value) || 5;
+            }
+
+            getGradientColor(percentage) {
+                if (percentage < 70) {
+                    // Verde para amarelo (0% a 70%)
+                    const ratio = percentage / 70;
+                    const r = Math.floor(34 + (255 - 34) * ratio);
+                    const g = Math.floor(197 + (215 - 197) * ratio);
+                    const b = Math.floor(94 + (0 - 94) * ratio);
+                    return `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, 0.8), rgba(${Math.floor(r*0.8)}, ${Math.floor(g*0.8)}, ${Math.floor(b*0.8)}, 0.9))`;
+                } else if (percentage < 95) {
+                    // Amarelo para vermelho (70% a 95%)
+                    const ratio = (percentage - 70) / 25;
+                    const r = Math.floor(255);
+                    const g = Math.floor(215 * (1 - ratio));
+                    const b = Math.floor(0);
+                    return `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, 0.8), rgba(${Math.floor(r*0.8)}, ${Math.floor(g*0.8)}, ${b}, 0.9))`;
+                } else {
+                    // Vermelho intenso (95%+)
+                    return `linear-gradient(135deg, rgba(220, 20, 20, 0.9), rgba(180, 0, 0, 0.95))`;
+                }
+            }
+
+            getProgressColor(percentage) {
+                if (percentage < 70) {
+                    const ratio = percentage / 70;
+                    const r = Math.floor(34 + (255 - 34) * ratio);
+                    const g = Math.floor(197 + (215 - 197) * ratio);
+                    const b = Math.floor(94 + (0 - 94) * ratio);
+                    return `rgb(${r}, ${g}, ${b})`;
+                } else if (percentage < 95) {
+                    const ratio = (percentage - 70) / 25;
+                    const r = 255;
+                    const g = Math.floor(215 * (1 - ratio));
+                    const b = 0;
+                    return `rgb(${r}, ${g}, ${b})`;
+                } else {
+                    return `rgb(220, 20, 20)`;
+                }
+            }
+
+            playAlert() {
+                // Criar um beep usando Web Audio API
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            }
+        }
+
+        // Inicializar os 10 cronômetros
+        const timers = [];
+        for (let i = 1; i <= 10; i++) {
+            timers.push(new Timer(i));
+        }
+
+        // Atualizar cores quando o tempo alvo mudar
+        document.getElementById('targetTime').addEventListener('change', () => {
+            timers.forEach(timer => {
+                if (timer.state !== 'stopped') {
+                    const targetTimeMs = timer.getTargetTime() * 60 * 1000;
+                    const percentage = (timer.elapsedTime / targetTimeMs) * 100;
+                    timer.element.style.background = timer.getGradientColor(percentage);
+                    timer.updateProgressBar(percentage);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
