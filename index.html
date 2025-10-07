@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cronômetros Coloridos</title>
+    <title>Pizzaria - Sistema de Pedidos</title>
     <style>
         * {
             margin: 0;
@@ -12,361 +12,1813 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             overflow: hidden;
         }
 
-        .header-bar {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        header {
+            background: #2d3748;
+            color: white;
+            padding: 30px;
+            text-align: center;
         }
 
-        .time-input input {
-            padding: 12px 20px;
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #4a5568;
+            border-bottom: 3px solid #2d3748;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            transition: background 0.3s;
             border: none;
-            border-radius: 25px;
+            font-size: 16px;
+        }
+
+        .tab:hover {
+            background: #5a6778;
+        }
+
+        .tab.active {
+            background: #667eea;
+        }
+
+        .content {
+            padding: 30px;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #48bb78;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn-secondary {
+            background: #718096;
+            padding: 10px 20px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        .section-title {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
             font-size: 18px;
             font-weight: bold;
-            text-align: center;
-            width: 120px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            outline: none;
+            color: #2d3748;
+            border-left: 4px solid #667eea;
         }
 
-        .timers-container {
-            height: calc(100vh - 70px);
-            padding: 2.5%;
+        .pizza-item {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
         }
 
-        .timers-grid {
+        .pizza-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .remove-pizza {
+            background: #f56565;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Pedidos Abertos - Kanban Style */
+        .kanban-board {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2%;
-            height: 100%;
-            width: 100%;
+            gap: 20px;
+            margin-top: 20px;
         }
 
-        .timer {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        .kanban-column {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .kanban-header {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+        }
+
+        .status-producao {
+            background: #f39c12;
+        }
+
+        .status-assando {
+            background: #e74c3c;
+        }
+
+        .status-pronto {
+            background: #27ae60;
+        }
+
+        .pedido-kanban {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            overflow: hidden;
-            min-height: 200px;
+            transition: transform 0.2s;
         }
 
-        .timer:hover {
-            transform: scale(1.02);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        .pedido-kanban:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
 
-        .timer-number {
-            font-size: clamp(24px, 4vw, 36px);
+        .pedido-numero-kanban {
+            font-size: 16px;
             font-weight: bold;
-            color: white;
-            margin-bottom: 20px;
-            opacity: 0.8;
+            color: #667eea;
+            margin-bottom: 8px;
         }
 
-        .timer-display {
-            font-size: clamp(48px, 8vw, 80px);
+        .pedido-cliente-kanban {
+            font-size: 14px;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .pedido-sabor-kanban {
+            font-size: 13px;
+            color: #718096;
+            margin-bottom: 10px;
+        }
+
+        .cronometro {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
             font-weight: bold;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            color: #e74c3c;
+            margin-top: 10px;
+            padding: 8px;
+            background: #fff5f5;
+            border-radius: 5px;
         }
 
-        .progress-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
+        .pedido-actions-kanban {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* Histórico */
+        .pedido-historico {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pedido-historico:hover {
+            border-color: #667eea;
+        }
+
+        .pedido-historico-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pedido-historico-resumo {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .pedido-historico-detalhes {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .pedido-historico.expanded .pedido-historico-detalhes {
+            display: block;
+        }
+
+        .expand-icon {
+            transition: transform 0.3s;
+        }
+
+        .pedido-historico.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #718096;
+        }
+
+        /* Item adicionado */
+        .item-adicionado {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .checkbox-gratis {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .checkbox-gratis input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        /* Tabela de preços */
+        .tabela-precos {
             width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            overflow: hidden;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
 
-        .progress-fill {
-            height: 100%;
-            width: 0%;
-            transition: all 0.3s ease;
+        .tabela-precos th,
+        .tabela-precos td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        /* Responsividade para diferentes tamanhos de tela */
-        @media (max-width: 1400px) {
-            .timers-grid {
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            }
+        .tabela-precos th {
+            background: #f7fafc;
+            font-weight: bold;
+            color: #2d3748;
         }
 
-        @media (max-width: 1200px) {
-            .timers-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            }
+        .tabela-precos tr:hover {
+            background: #f7fafc;
         }
 
-        @media (max-width: 900px) {
-            .timers-grid {
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                gap: 1.5%;
+        .btn-editar {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .btn-excluir {
+            background: #f56565;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .desconto-section {
+            background: #fff5f5;
+            border: 2px solid #feb2b2;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
             }
             
-            .timers-container {
-                padding: 1.5%;
+            .kanban-board {
+                grid-template-columns: 1fr;
             }
-        }
 
-        @media (max-width: 600px) {
-            .timers-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1%;
-            }
-            
-            .timers-container {
-                padding: 1%;
-            }
-            
-            .timer {
-                min-height: 150px;
-                border-radius: 15px;
-            }
-            
-            .header-bar {
-                padding: 10px 20px;
-            }
-            
-            .time-input input {
-                width: 100px;
-                font-size: 16px;
-                padding: 10px 15px;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .timers-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .timer {
-                min-height: 120px;
-            }
-        }
-
-        /* Para telas muito grandes */
-        @media (min-width: 1800px) {
-            .timers-grid {
-                grid-template-columns: repeat(5, 1fr);
-                gap: 1.5%;
+            .form-row {
+                grid-template-columns: 1fr;
             }
         }
     </style>
+    <!-- Firebase SDK v9+ (modular) -->
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAW98OjxuKU0WLNUlVIJJ1OncPK2Fp_83I",
+    authDomain: "pizzaria-4b622.firebaseapp.com",
+    projectId: "pizzaria-4b622",
+    storageBucket: "pizzaria-4b622.firebasestorage.app",
+    messagingSenderId: "520975310703",
+    appId: "1:520975310703:web:cdb57411622ec8a616d29a",
+    measurementId: "G-89FGQWKNZ5"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Tornar disponível globalmente
+  window.db = db;
+  window.firestore = { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot };
+</script>
 </head>
 <body>
-    <div class="header-bar">
-        <div class="time-input">
-            <input type="number" id="targetTime" value="5" min="1" max="60">
+    <div class="container">
+        <header>
+            <h1>🍕 Pizzaria System</h1>
+            <p>Sistema de Gerenciamento de Pedidos</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('novo')">Novo Pedido</button>
+            <button class="tab" onclick="showTab('abertos')">Pedidos Abertos</button>
+            <button class="tab" onclick="showTab('historico')">Histórico de Vendas</button>
+            <button class="tab" onclick="showTab('cardapio')">Cardápio e Preços</button>
         </div>
-    </div>
 
-    <div class="timers-container">
-        <div class="timers-grid" id="timersGrid">
-            <!-- Os cronômetros serão gerados aqui -->
-        </div>
-    </div>
-
-    <script>
-        class Timer {
-            constructor(id) {
-                this.id = id;
-                this.startTime = 0;
-                this.elapsedTime = 0;
-                this.isRunning = false;
-                this.intervalId = null;
-                this.state = 'stopped'; // stopped, running, paused
-                this.alertPlayed70 = false;
-                this.alertPlayed95 = false;
-                
-                this.createElement();
-                this.updateDisplay();
-            }
-
-            createElement() {
-                const timer = document.createElement('div');
-                timer.className = 'timer';
-                timer.style.background = this.getGradientColor(0);
-                timer.innerHTML = `
-                    <div class="timer-number">${this.id}</div>
-                    <div class="timer-display" id="display-${this.id}">00:00</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progress-${this.id}"></div>
+        <div class="content">
+            <!-- Aba Novo Pedido -->
+            <div id="novo" class="tab-content active">
+                <h2 style="margin-bottom: 25px; color: #2d3748;">📝 Novo Pedido</h2>
+                <form id="formPedido">
+                    
+                    <div class="section-title">📋 Informações do Cliente</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cpf">CPF</label>
+                            <input type="text" id="cpf" placeholder="000.000.000-00">
+                        </div>
+                        <div class="form-group">
+                            <label for="nome">Nome *</label>
+                            <input type="text" id="nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="canal">Canal *</label>
+                            <select id="canal" required>
+                                <option value="">Selecione...</option>
+                                <option value="Telefone">Telefone</option>
+                                <option value="WhatsApp">WhatsApp</option>
+                                <option value="Presencial">Presencial</option>
+                                <option value="iFood">iFood</option>
+                                <option value="Rappi">Rappi</option>
+                            </select>
+                        </div>
                     </div>
-                `;
-                
-                timer.addEventListener('click', () => this.handleClick());
-                document.getElementById('timersGrid').appendChild(timer);
-                this.element = timer;
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bairro">Bairro *</label>
+                            <input type="text" id="bairro" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taxaEntrega">Taxa de Entrega (R$) *</label>
+                            <input type="number" id="taxaEntrega" step="0.01" value="0" required onchange="calcularTotal()">
+                        </div>
+                        <div class="form-group">
+                            <label for="entregadorPago">Entregador Pago *</label>
+                            <select id="entregadorPago" required>
+                                <option value="">Selecione...</option>
+                                <option value="Sim">Sim</option>
+                                <option value="Não">Não</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="section-title">🍕 Pizzas</div>
+                <div id="pizzasContainer"></div>
+                <button type="button" class="btn btn-secondary" onclick="adicionarPizza()">+ Adicionar Pizza</button>
+
+                <div class="section-title" style="margin-top: 30px;">🥤 Bebidas</div>
+                <div id="bebidasContainer"></div>
+                <button type="button" class="btn btn-secondary" onclick="adicionarBebida()">+ Adicionar Bebida</button>
+
+                <div class="section-title" style="margin-top: 30px;">💰 Pagamento</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pagamento">Forma de Pagamento *</label>
+                        <select id="pagamento" required>
+                            <option value="">Selecione...</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Cartão Débito">Cartão Débito</option>
+                            <option value="Cartão Crédito">Cartão Crédito</option>
+                            <option value="PIX">PIX</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="desconto-section">
+                    <h3 style="margin-bottom: 15px;">🎁 Desconto</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="radio" name="tipoDesconto" value="porcentagem" checked onchange="calcularTotal()"> Desconto em %
+                            </label>
+                            <input type="number" id="descontoPorcentagem" step="0.01" value="0" min="0" max="100" onchange="calcularTotal()">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="radio" name="tipoDesconto" value="valor" onchange="calcularTotal()"> Desconto em R$
+                            </label>
+                            <input type="number" id="descontoValor" step="0.01" value="0" min="0" onchange="calcularTotal()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-top: 30px;">
+                    <div class="form-group">
+                        <label for="subtotal">Subtotal (R$)</label>
+                        <input type="number" id="subtotal" step="0.01" readonly style="font-weight: bold; background: #f7fafc;">
+                    </div>
+                    <div class="form-group">
+                        <label for="valorDesconto">Desconto (R$)</label>
+                        <input type="number" id="valorDesconto" step="0.01" readonly style="font-weight: bold; background: #fff5f5; color: #e53e3e;">
+                    </div>
+                    <div class="form-group">
+                        <label for="valorTotal">VALOR TOTAL (R$)</label>
+                        <input type="number" id="valorTotal" step="0.01" readonly style="font-weight: bold; background: #f7fafc; font-size: 18px; color: #48bb78;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%; margin-top: 20px;">Registrar Pedido</button>
+            </form>
+        </div>
+
+        <!-- Aba Pedidos Abertos -->
+        <div id="abertos" class="tab-content">
+            <h2 style="margin-bottom: 25px; color: #2d3748;">🔥 Pedidos em Andamento</h2>
+            <div class="kanban-board" id="kanbanBoard"></div>
+        </div>
+
+        <!-- Aba Histórico -->
+        <div id="historico" class="tab-content">
+            <h2 style="margin-bottom: 25px; color: #2d3748;">📊 Histórico de Vendas</h2>
+            <div class="stats" id="estatisticas"></div>
+            <div id="listaHistorico"></div>
+        </div>
+
+        <!-- Aba Cardápio -->
+        <div id="cardapio" class="tab-content">
+            <h2 style="margin-bottom: 25px; color: #2d3748;">📋 Cardápio e Preços</h2>
+            
+            <!-- Sabores de Pizza -->
+            <div class="section-title">🍕 Sabores de Pizza</div>
+            <button type="button" class="btn btn-secondary" onclick="abrirModalSabor()">+ Adicionar Sabor</button>
+            <table class="tabela-precos" id="tabelaSabores"></table>
+
+            <!-- Bordas -->
+            <div class="section-title" style="margin-top: 30px;">🧀 Bordas</div>
+            <button type="button" class="btn btn-secondary" onclick="abrirModalBorda()">+ Adicionar Borda</button>
+            <table class="tabela-precos" id="tabelaBordas"></table>
+
+            <!-- Complementos -->
+            <div class="section-title" style="margin-top: 30px;">🍖 Complementos</div>
+            <button type="button" class="btn btn-secondary" onclick="abrirModalComplemento()">+ Adicionar Complemento</button>
+            <table class="tabela-precos" id="tabelaComplementos"></table>
+
+            <!-- Bebidas -->
+            <div class="section-title" style="margin-top: 30px;">🥤 Bebidas</div>
+            <button type="button" class="btn btn-secondary" onclick="abrirModalBebida()">+ Adicionar Bebida</button>
+            <table class="tabela-precos" id="tabelaBebidasCardapio"></table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para adicionar/editar itens -->
+<div id="modalItem" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+        <h2 id="modalTitulo" style="margin-bottom: 20px;"></h2>
+        <form id="formItem">
+            <div class="form-group">
+                <label for="itemNome">Nome *</label>
+                <input type="text" id="itemNome" required>
+            </div>
+            <div id="precosContainer"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn">Salvar</button>
+                <button type="button" class="btn btn-danger" onclick="fecharModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ========== VARIÁVEIS GLOBAIS ==========
+    let pedidos = [];
+    let proximoNumero = 1;
+    let sabores = [];
+    let bordas = [];
+    let complementos = [];
+    let bebidasCardapio = [];
+    let pizzaCount = 0;
+    let bebidaCount = 0;
+    let modalTipo = '';
+    let itemEditando = null;
+
+    // ========== FIREBASE - CARREGAR DADOS ==========
+    async function carregarDadosFirebase() {
+        try {
+            // Carregar pedidos
+            const pedidosSnapshot = await window.firestore.getDocs(
+                window.firestore.query(
+                    window.firestore.collection(window.db, 'pedidos'),
+                    window.firestore.orderBy('numero', 'desc')
+                )
+            );
+            pedidos = pedidosSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            // Calcular próximo número
+            if (pedidos.length > 0) {
+                proximoNumero = Math.max(...pedidos.map(p => p.numero)) + 1;
             }
 
-            handleClick() {
-                if (this.state === 'stopped') {
-                    this.start();
-                } else if (this.state === 'running') {
-                    this.pause();
-                } else if (this.state === 'paused') {
-                    this.reset();
-                }
+            // Carregar sabores
+            const saboresSnapshot = await window.firestore.getDocs(
+                window.firestore.collection(window.db, 'sabores')
+            );
+            sabores = saboresSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            // Se não houver sabores, criar padrão
+            if (sabores.length === 0) {
+                await criarSaboresPadrao();
             }
 
-            start() {
-                this.state = 'running';
-                this.startTime = Date.now() - this.elapsedTime;
-                this.intervalId = setInterval(() => this.tick(), 100);
+            // Carregar bordas
+            const bordasSnapshot = await window.firestore.getDocs(
+                window.firestore.collection(window.db, 'bordas')
+            );
+            bordas = bordasSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            if (bordas.length === 0) {
+                await criarBordasPadrao();
             }
 
-            pause() {
-                this.state = 'paused';
-                clearInterval(this.intervalId);
+            // Carregar complementos
+            const complementosSnapshot = await window.firestore.getDocs(
+                window.firestore.collection(window.db, 'complementos')
+            );
+            complementos = complementosSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            if (complementos.length === 0) {
+                await criarComplementosPadrao();
             }
 
-            reset() {
-                this.state = 'stopped';
-                this.elapsedTime = 0;
-                this.alertPlayed70 = false;
-                this.alertPlayed95 = false;
-                this.updateDisplay();
-                this.element.style.background = this.getGradientColor(0);
-                this.updateProgressBar(0);
+            // Carregar bebidas
+            const bebidasSnapshot = await window.firestore.getDocs(
+                window.firestore.collection(window.db, 'bebidas')
+            );
+            bebidasCardapio = bebidasSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            if (bebidasCardapio.length === 0) {
+                await criarBebidasPadrao();
             }
 
-            tick() {
-                this.elapsedTime = Date.now() - this.startTime;
-                this.updateDisplay();
-                
-                const targetTimeMs = this.getTargetTime() * 60 * 1000;
-                const percentage = (this.elapsedTime / targetTimeMs) * 100;
-                
-                this.updateProgressBar(Math.min(percentage, 100));
-                this.element.style.background = this.getGradientColor(percentage);
-                
-                // Alertas sonoros
-                if (percentage >= 70 && !this.alertPlayed70) {
-                    this.playAlert();
-                    this.alertPlayed70 = true;
-                }
-                
-                if (percentage >= 95 && !this.alertPlayed95) {
-                    this.playAlert();
-                    this.alertPlayed95 = true;
-                }
-            }
+            console.log('✅ Dados carregados do Firebase');
+        } catch (error) {
+            console.error('❌ Erro ao carregar dados:', error);
+            alert('Erro ao carregar dados do Firebase. Verifique o console.');
+        }
+    }
 
-            updateDisplay() {
-                const minutes = Math.floor(this.elapsedTime / 60000);
-                const seconds = Math.floor((this.elapsedTime % 60000) / 1000);
-                const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                document.getElementById(`display-${this.id}`).textContent = display;
-            }
+    // ========== CRIAR DADOS PADRÃO ==========
+    async function criarSaboresPadrao() {
+        const saboresPadrao = [
+            {nome: 'CALABRESA', precos: {Pequena: 25, Média: 35, Grande: 45, Família: 55}},
+            {nome: 'CALABRESA ACEBOLADA', precos: {Pequena: 27, Média: 37, Grande: 47, Família: 57}},
+            {nome: 'CALABRESA E CHEDDAR', precos: {Pequena: 30, Média: 40, Grande: 50, Família: 60}},
+            {nome: 'FRANGO', precos: {Pequena: 25, Média: 35, Grande: 45, Família: 55}},
+            {nome: 'FRANGO E CHEDDAR', precos: {Pequena: 28, Média: 38, Grande: 48, Família: 58}},
+            {nome: 'MUSSARELA', precos: {Pequena: 20, Média: 30, Grande: 40, Família: 50}},
+            {nome: 'PORTUGUESA', precos: {Pequena: 30, Média: 40, Grande: 50, Família: 60}},
+            {nome: 'MARGUERITA', precos: {Pequena: 25, Média: 35, Grande: 45, Família: 55}}
+        ];
 
-            updateProgressBar(percentage) {
-                const progressFill = document.getElementById(`progress-${this.id}`);
-                progressFill.style.width = `${Math.min(percentage, 100)}%`;
-                progressFill.style.background = this.getProgressColor(percentage);
-            }
+        for (const sabor of saboresPadrao) {
+            await window.firestore.addDoc(
+                window.firestore.collection(window.db, 'sabores'),
+                sabor
+            );
+        }
+        await carregarDadosFirebase();
+    }
 
-            getTargetTime() {
-                return parseInt(document.getElementById('targetTime').value) || 5;
-            }
+    async function criarBordasPadrao() {
+        const bordasPadrao = [
+            {nome: 'Catupiry', preco: 5},
+            {nome: 'Cheddar', preco: 5},
+            {nome: 'Cream Cheese', preco: 6},
+            {nome: 'Chocolate', preco: 6}
+        ];
 
-            getGradientColor(percentage) {
-                if (percentage < 70) {
-                    // Verde para amarelo (0% a 70%)
-                    const ratio = percentage / 70;
-                    const r = Math.floor(34 + (255 - 34) * ratio);
-                    const g = Math.floor(197 + (215 - 197) * ratio);
-                    const b = Math.floor(94 + (0 - 94) * ratio);
-                    return `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, 0.8), rgba(${Math.floor(r*0.8)}, ${Math.floor(g*0.8)}, ${Math.floor(b*0.8)}, 0.9))`;
-                } else if (percentage < 95) {
-                    // Amarelo para vermelho (70% a 95%)
-                    const ratio = (percentage - 70) / 25;
-                    const r = Math.floor(255);
-                    const g = Math.floor(215 * (1 - ratio));
-                    const b = Math.floor(0);
-                    return `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, 0.8), rgba(${Math.floor(r*0.8)}, ${Math.floor(g*0.8)}, ${b}, 0.9))`;
-                } else {
-                    // Vermelho intenso (95%+)
-                    return `linear-gradient(135deg, rgba(220, 20, 20, 0.9), rgba(180, 0, 0, 0.95))`;
-                }
-            }
+        for (const borda of bordasPadrao) {
+            await window.firestore.addDoc(
+                window.firestore.collection(window.db, 'bordas'),
+                borda
+            );
+        }
+        await carregarDadosFirebase();
+    }
 
-            getProgressColor(percentage) {
-                if (percentage < 70) {
-                    const ratio = percentage / 70;
-                    const r = Math.floor(34 + (255 - 34) * ratio);
-                    const g = Math.floor(197 + (215 - 197) * ratio);
-                    const b = Math.floor(94 + (0 - 94) * ratio);
-                    return `rgb(${r}, ${g}, ${b})`;
-                } else if (percentage < 95) {
-                    const ratio = (percentage - 70) / 25;
-                    const r = 255;
-                    const g = Math.floor(215 * (1 - ratio));
-                    const b = 0;
-                    return `rgb(${r}, ${g}, ${b})`;
-                } else {
-                    return `rgb(220, 20, 20)`;
-                }
-            }
+    async function criarComplementosPadrao() {
+        const complementosPadrao = [
+            {nome: 'Bacon', preco: 5},
+            {nome: 'Azeitona', preco: 3},
+            {nome: 'Milho', preco: 2},
+            {nome: 'Cebola', preco: 2}
+        ];
 
-            playAlert() {
-                // Criar um beep usando Web Audio API
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.3);
-            }
+        for (const comp of complementosPadrao) {
+            await window.firestore.addDoc(
+                window.firestore.collection(window.db, 'complementos'),
+                comp
+            );
+        }
+        await carregarDadosFirebase();
+    }
+
+    async function criarBebidasPadrao() {
+        const bebidasPadrao = [
+            {nome: 'Coca-Cola 2L', preco: 10},
+            {nome: 'Coca-Cola 1L', preco: 7},
+            {nome: 'Guaraná 2L', preco: 9},
+            {nome: 'Água 500ml', preco: 3}
+        ];
+
+        for (const bebida of bebidasPadrao) {
+            await window.firestore.addDoc(
+                window.firestore.collection(window.db, 'bebidas'),
+                bebida
+            );
+        }
+        await carregarDadosFirebase();
+    }
+
+    // ========== PIZZAS ==========
+    function adicionarPizza() {
+        pizzaCount++;
+        const container = document.getElementById('pizzasContainer');
+        const pizzaDiv = document.createElement('div');
+        pizzaDiv.className = 'pizza-item';
+        pizzaDiv.id = `pizza-${pizzaCount}`;
+        pizzaDiv.innerHTML = `
+            <div class="pizza-item-header">
+                <strong>Pizza ${pizzaCount}</strong>
+                ${pizzaCount > 1 ? `<button type="button" class="remove-pizza" onclick="removerPizza(${pizzaCount})">✕ Remover</button>` : ''}
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tamanho *</label>
+                    <select class="pizza-tamanho" required onchange="atualizarPrecoSabor(${pizzaCount})">
+                        <option value="">Selecione...</option>
+                        <option value="Pequena">Pequena</option>
+                        <option value="Média">Média</option>
+                        <option value="Grande">Grande</option>
+                        <option value="Família">Família</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Sabor 1 *</label>
+                    <select class="pizza-sabor1" required onchange="atualizarPrecoSabor(${pizzaCount})">
+                        <option value="">Selecione...</option>
+                        ${sabores.map(s => `<option value="${s.nome}">${s.nome}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Sabor 2</label>
+                    <select class="pizza-sabor2" onchange="atualizarPrecoSabor(${pizzaCount})">
+                        <option value="">Selecione...</option>
+                        ${sabores.map(s => `<option value="${s.nome}">${s.nome}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Valor Sabores (R$) *</label>
+                    <input type="number" class="pizza-valor" step="0.01" readonly style="background: #f7fafc;">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Borda</label>
+                    <select class="pizza-borda" onchange="atualizarPrecoBorda(${pizzaCount})">
+                        <option value="">Sem borda</option>
+                        ${bordas.map(b => `<option value="${b.nome}">${b.nome} - R$ ${b.preco.toFixed(2)}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Valor Borda (R$)</label>
+                    <input type="number" class="pizza-valor-borda" step="0.01" value="0" readonly style="background: #f7fafc;">
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-gratis">
+                        <input type="checkbox" class="pizza-borda-gratis" onchange="atualizarPrecoBorda(${pizzaCount})">
+                        <label>Borda Grátis</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Complementos</label>
+                <div id="complementos-pizza-${pizzaCount}"></div>
+                <button type="button" class="btn-secondary" onclick="adicionarComplementoPizza(${pizzaCount})">+ Adicionar Complemento</button>
+            </div>
+        `;
+        container.appendChild(pizzaDiv);
+    }
+
+    function removerPizza(numero) {
+        document.getElementById(`pizza-${numero}`).remove();
+        calcularTotal();
+    }
+
+    function atualizarPrecoSabor(pizzaNum) {
+        const pizzaDiv = document.getElementById(`pizza-${pizzaNum}`);
+        const tamanho = pizzaDiv.querySelector('.pizza-tamanho').value;
+        const sabor1 = pizzaDiv.querySelector('.pizza-sabor1').value;
+        const sabor2 = pizzaDiv.querySelector('.pizza-sabor2').value;
+        const valorInput = pizzaDiv.querySelector('.pizza-valor');
+
+        if (!tamanho || !sabor1) {
+            valorInput.value = 0;
+            calcularTotal();
+            return;
         }
 
-        // Inicializar os 10 cronômetros
-        const timers = [];
-        for (let i = 1; i <= 10; i++) {
-            timers.push(new Timer(i));
+        const precoSabor1 = sabores.find(s => s.nome === sabor1)?.precos[tamanho] || 0;
+        
+        if (sabor2) {
+            const precoSabor2 = sabores.find(s => s.nome === sabor2)?.precos[tamanho] || 0;
+            valorInput.value = Math.max(precoSabor1, precoSabor2).toFixed(2);
+        } else {
+            valorInput.value = precoSabor1.toFixed(2);
+        }
+        
+        calcularTotal();
+    }
+
+    function atualizarPrecoBorda(pizzaNum) {
+        const pizzaDiv = document.getElementById(`pizza-${pizzaNum}`);
+        const bordaSelecionada = pizzaDiv.querySelector('.pizza-borda').value;
+        const valorBordaInput = pizzaDiv.querySelector('.pizza-valor-borda');
+        const bordaGratis = pizzaDiv.querySelector('.pizza-borda-gratis').checked;
+
+        if (!bordaSelecionada || bordaGratis) {
+            valorBordaInput.value = 0;
+        } else {
+            const borda = bordas.find(b => b.nome === bordaSelecionada);
+            valorBordaInput.value = borda ? borda.preco.toFixed(2) : 0;
+        }
+        
+        calcularTotal();
+    }
+
+    function adicionarComplementoPizza(pizzaNum) {
+        const container = document.getElementById(`complementos-pizza-${pizzaNum}`);
+        const compNum = container.children.length + 1;
+        const compDiv = document.createElement('div');
+        compDiv.className = 'item-adicionado';
+        compDiv.innerHTML = `
+            <div class="item-info">
+                <select class="comp-select" onchange="atualizarPrecoComplemento(${pizzaNum}, ${compNum})">
+                    <option value="">Selecione...</option>
+                    ${complementos.map(c => `<option value="${c.nome}">${c.nome} - R$ ${c.preco.toFixed(2)}</option>`).join('')}
+                </select>
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                    <input type="number" class="comp-qtd" value="1" min="1" style="width: 80px;" onchange="atualizarPrecoComplemento(${pizzaNum}, ${compNum})">
+                    <input type="number" class="comp-valor" step="0.01" readonly style="background: #f7fafc; width: 100px;">
+                    <div class="checkbox-gratis">
+                        <input type="checkbox" class="comp-gratis" onchange="atualizarPrecoComplemento(${pizzaNum}, ${compNum})">
+                        <label>Grátis</label>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn-danger" onclick="this.parentElement.remove(); calcularTotal();">✕</button>
+        `;
+        container.appendChild(compDiv);
+    }
+
+    function atualizarPrecoComplemento(pizzaNum, compNum) {
+        const pizzaDiv = document.getElementById(`pizza-${pizzaNum}`);
+        const compDiv = pizzaDiv.querySelectorAll('.item-adicionado')[compNum - 1];
+        const compSelect = compDiv.querySelector('.comp-select').value;
+        const qtd = parseInt(compDiv.querySelector('.comp-qtd').value) || 1;
+        const gratis = compDiv.querySelector('.comp-gratis').checked;
+        const valorInput = compDiv.querySelector('.comp-valor');
+
+        if (!compSelect || gratis) {
+            valorInput.value = 0;
+        } else {
+            const comp = complementos.find(c => c.nome === compSelect);
+            valorInput.value = comp ? (comp.preco * qtd).toFixed(2) : 0;
+        }
+        
+        calcularTotal();
+    }
+
+    // ========== BEBIDAS ==========
+    function adicionarBebida() {
+        bebidaCount++;
+        const container = document.getElementById('bebidasContainer');
+        const bebidaDiv = document.createElement('div');
+        bebidaDiv.className = 'item-adicionado';
+        bebidaDiv.innerHTML = `
+            <div class="item-info">
+                <select class="bebida-select" onchange="atualizarPrecoBebida(${bebidaCount})">
+                    <option value="">Selecione...</option>
+                    ${bebidasCardapio.map(b => `<option value="${b.nome}">${b.nome} - R$ ${b.preco.toFixed(2)}</option>`).join('')}
+                </select>
+                <div style="display: flex; gap: 10px; margin-top: 5px;">
+                    <input type="number" class="bebida-qtd" value="1" min="1" style="width: 80px;" onchange="atualizarPrecoBebida(${bebidaCount})">
+                    <input type="number" class="bebida-valor" step="0.01" readonly style="background: #f7fafc; width: 100px;">
+                    <div class="checkbox-gratis">
+                        <input type="checkbox" class="bebida-gratis" onchange="atualizarPrecoBebida(${bebidaCount})">
+                        <label>Grátis</label>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn-danger" onclick="this.parentElement.remove(); calcularTotal();">✕</button>
+        `;
+        container.appendChild(bebidaDiv);
+    }
+
+    function atualizarPrecoBebida(bebidaNum) {
+        const container = document.getElementById('bebidasContainer');
+        const bebidaDiv = container.children[bebidaNum - 1];
+        const bebidaSelect = bebidaDiv.querySelector('.bebida-select').value;
+        const qtd = parseInt(bebidaDiv.querySelector('.bebida-qtd').value) || 1;
+        const gratis = bebidaDiv.querySelector('.bebida-gratis').checked;
+        const valorInput = bebidaDiv.querySelector('.bebida-valor');
+
+        if (!bebidaSelect || gratis) {
+            valorInput.value = 0;
+        } else {
+            const bebida = bebidasCardapio.find(b => b.nome === bebidaSelect);
+            valorInput.value = bebida ? (bebida.preco * qtd).toFixed(2) : 0;
+        }
+        
+        calcularTotal();
+    }
+
+    // ========== CÁLCULO TOTAL ==========
+    function calcularTotal() {
+        let subtotal = 0;
+
+        // Somar pizzas
+        document.querySelectorAll('.pizza-item').forEach(pizzaDiv => {
+            const valorSabor = parseFloat(pizzaDiv.querySelector('.pizza-valor').value) || 0;
+            const valorBorda = parseFloat(pizzaDiv.querySelector('.pizza-valor-borda').value) || 0;
+            
+            let valorComplementos = 0;
+            pizzaDiv.querySelectorAll('.comp-valor').forEach(input => {
+                valorComplementos += parseFloat(input.value) || 0;
+            });
+            
+            subtotal += valorSabor + valorBorda + valorComplementos;
+        });
+
+        // Somar bebidas
+        document.querySelectorAll('.bebida-valor').forEach(input => {
+            subtotal += parseFloat(input.value) || 0;
+        });
+
+        // Somar taxa de entrega
+        const taxaEntrega = parseFloat(document.getElementById('taxaEntrega').value) || 0;
+        subtotal += taxaEntrega;
+
+        // Calcular desconto
+        let valorDesconto = 0;
+        const tipoDesconto = document.querySelector('input[name="tipoDesconto"]:checked').value;
+        
+        if (tipoDesconto === 'porcentagem') {
+            const porcentagem = parseFloat(document.getElementById('descontoPorcentagem').value) || 0;
+            valorDesconto = (subtotal * porcentagem) / 100;
+        } else {
+            valorDesconto = parseFloat(document.getElementById('descontoValor').value) || 0;
         }
 
-        // Atualizar cores quando o tempo alvo mudar
-        document.getElementById('targetTime').addEventListener('change', () => {
-            timers.forEach(timer => {
-                if (timer.state !== 'stopped') {
-                    const targetTimeMs = timer.getTargetTime() * 60 * 1000;
-                    const percentage = (timer.elapsedTime / targetTimeMs) * 100;
-                    timer.element.style.background = timer.getGradientColor(percentage);
-                    timer.updateProgressBar(percentage);
+        const valorTotal = subtotal - valorDesconto;
+
+        document.getElementById('subtotal').value = subtotal.toFixed(2);
+        document.getElementById('valorDesconto').value = valorDesconto.toFixed(2);
+        document.getElementById('valorTotal').value = valorTotal.toFixed(2);
+    }
+
+    // ========== FORM PEDIDO - SALVAR NO FIREBASE ==========
+    document.getElementById('formPedido').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const pizzas = [];
+        document.querySelectorAll('.pizza-item').forEach((pizzaDiv, index) => {
+            const complementosPizza = [];
+            pizzaDiv.querySelectorAll('.item-adicionado').forEach(compDiv => {
+                const nome = compDiv.querySelector('.comp-select').value;
+                const qtd = parseInt(compDiv.querySelector('.comp-qtd').value) || 1;
+                const valor = parseFloat(compDiv.querySelector('.comp-valor').value) || 0;
+                if (nome) {
+                    complementosPizza.push({nome, qtd, valor});
                 }
             });
+
+            pizzas.push({
+                numero: index + 1,
+                tamanho: pizzaDiv.querySelector('.pizza-tamanho').value,
+                sabor1: pizzaDiv.querySelector('.pizza-sabor1').value,
+                sabor2: pizzaDiv.querySelector('.pizza-sabor2').value || null,
+                valorSabores: parseFloat(pizzaDiv.querySelector('.pizza-valor').value) || 0,
+                borda: pizzaDiv.querySelector('.pizza-borda').value || null,
+                valorBorda: parseFloat(pizzaDiv.querySelector('.pizza-valor-borda').value) || 0,
+                complementos: complementosPizza,
+                valorComplementos: complementosPizza.reduce((sum, c) => sum + c.valor, 0)
+            });
         });
-    </script>
+
+        const bebidas = [];
+        document.querySelectorAll('#bebidasContainer .item-adicionado').forEach(bebidaDiv => {
+            const nome = bebidaDiv.querySelector('.bebida-select').value;
+            const qtd = parseInt(bebidaDiv.querySelector('.bebida-qtd').value) || 1;
+            const valor = parseFloat(bebidaDiv.querySelector('.bebida-valor').value) || 0;
+            if (nome) {
+                bebidas.push({nome, qtd, valor});
+            }
+        });
+
+        const agora = new Date();
+        const pedido = {
+            numero: proximoNumero,
+            data: agora.toLocaleDateString('pt-BR'),
+            hora: agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}),
+            timestamp: agora.getTime(),
+            cpf: document.getElementById('cpf').value,
+            nome: document.getElementById('nome').value,
+            canal: document.getElementById('canal').value,
+            bairro: document.getElementById('bairro').value,
+            pizzas: pizzas,
+            bebidas: bebidas,
+            valorBebidas: bebidas.reduce((sum, b) => sum + b.valor, 0),
+            taxaEntrega: parseFloat(document.getElementById('taxaEntrega').value) || 0,
+            entregadorPago: document.getElementById('entregadorPago').value,
+            pagamento: document.getElementById('pagamento').value,
+            subtotal: parseFloat(document.getElementById('subtotal').value) || 0,
+            desconto: parseFloat(document.getElementById('valorDesconto').value) || 0,
+            valorTotal: parseFloat(document.getElementById('valorTotal').value) || 0,
+            status: 'Produzindo'
+        };
+
+        try {
+            // Salvar no Firebase
+            await window.firestore.addDoc(
+                window.firestore.collection(window.db, 'pedidos'),
+                pedido
+            );
+
+            proximoNumero++;
+            alert(`✅ Pedido #${pedido.numero} registrado com sucesso!`);
+            
+            // Limpar formulário
+            document.getElementById('formPedido').reset();
+            document.getElementById('pizzasContainer').innerHTML = '';
+            document.getElementById('bebidasContainer').innerHTML = '';
+            pizzaCount = 0;
+            bebidaCount = 0;
+            adicionarPizza();
+            calcularTotal();
+            
+            // Recarregar pedidos
+            await carregarDadosFirebase();
+            renderPedidosAbertos();
+        } catch (error) {
+            console.error('Erro ao salvar pedido:', error);
+            alert('❌ Erro ao salvar pedido. Verifique o console.');
+        }
+    });
+
+    // ========== ABAS ==========
+    function showTab(tabName) {
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        event.target.classList.add('active');
+        document.getElementById(tabName).classList.add('active');
+
+        if (tabName === 'abertos') {
+            renderPedidosAbertos();
+        } else if (tabName === 'historico') {
+            renderHistorico();
+        } else if (tabName === 'cardapio') {
+            renderCardapio();
+        }
+    }
+
+    // ========== PEDIDOS ABERTOS (KANBAN) ==========
+    function renderPedidosAbertos() {
+        const board = document.getElementById('kanbanBoard');
+        const pedidosAbertos = pedidos.filter(p => p.status !== 'Entregue' && p.status !== 'Retirado');
+
+        if (pedidosAbertos.length === 0) {
+            board.innerHTML = '<div class="empty-state"><h3>📭 Nenhum pedido em andamento</h3></div>';
+            return;
+        }
+
+        const producao = pedidosAbertos.filter(p => p.status === 'Produzindo');
+        const assando = pedidosAbertos.filter(p => p.status === 'Assando');
+        const pronto = pedidosAbertos.filter(p => p.status === 'Pronto');
+
+        board.innerHTML = `
+            <div class="kanban-column">
+                <div class="kanban-header status-producao">🔨 Produzindo (${producao.length})</div>
+                ${producao.map(p => renderPedidoKanban(p)).join('')}
+            </div>
+            <div class="kanban-column">
+                <div class="kanban-header status-assando">🔥 Assando (${assando.length})</div>
+                ${assando.map(p => renderPedidoKanban(p)).join('')}
+            </div>
+            <div class="kanban-column">
+                <div class="kanban-header status-pronto">✅ Pronto (${pronto.length})</div>
+                ${pronto.map(p => renderPedidoKanban(p)).join('')}
+            </div>
+        `;
+    }
+
+    function renderPedidoKanban(pedido) {
+        const tempoDecorrido = calcularTempoDecorrido(pedido.timestamp);
+        const saboresTexto = pedido.pizzas.map(pizza => {
+            return pizza.sabor2 ? `${pizza.sabor1}/${pizza.sabor2}` : pizza.sabor1;
+        }).join(', ');
+
+        let botoes = '';
+        if (pedido.status === 'Produzindo') {
+            botoes = `<button class="btn btn-small" onclick="mudarStatus('${pedido.id}', 'Assando')">▶ Assar</button>`;
+        } else if (pedido.status === 'Assando') {
+            botoes = `<button class="btn btn-success btn-small" onclick="mudarStatus('${pedido.id}', 'Pronto')">✓ Pronto</button>`;
+        } else if (pedido.status === 'Pronto') {
+            botoes = `
+                <button class="btn btn-success btn-small" onclick="mudarStatus('${pedido.id}', 'Entregue')">🚚 Entregue</button>
+                <button class="btn btn-small" onclick="mudarStatus('${pedido.id}', 'Retirado')">👤 Retirado</button>
+            `;
+        }
+
+        return `
+            <div class="pedido-kanban" onclick="verDetalhesPedido(${pedido.numero})">
+                <div class="pedido-numero-kanban">Pedido #${pedido.numero}</div>
+                <div class="pedido-cliente-kanban">👤 ${pedido.nome}</div>
+                <div class="pedido-sabor-kanban">🍕 ${saboresTexto}</div>
+                <div class="pedido-cliente-kanban">💰 R$ ${pedido.valorTotal.toFixed(2)}</div>
+                <div class="cronometro" id="cronometro-${pedido.numero}">⏱️ ${tempoDecorrido}</div>
+                <div class="pedido-actions-kanban" onclick="event.stopPropagation()">
+                    ${botoes}
+                </div>
+            </div>
+        `;
+    }
+
+    async function mudarStatus(pedidoId, novoStatus) {
+        try {
+            const pedidoRef = window.firestore.doc(window.db, 'pedidos', pedidoId);
+            const updateData = { status: novoStatus };
+            
+            if (novoStatus === 'Entregue' || novoStatus === 'Retirado') {
+                updateData.dataFinalizacao = new Date().toLocaleString('pt-BR');
+            }
+            
+            await window.firestore.updateDoc(pedidoRef, updateData);
+            await carregarDadosFirebase();
+            renderPedidosAbertos();
+        } catch (error) {
+            console.error
+            ('Erro ao atualizar status:', error);
+            alert('❌ Erro ao atualizar status do pedido.');
+        }
+    }
+
+    function calcularTempoDecorrido(timestamp) {
+        const agora = Date.now();
+        const diff = agora - timestamp;
+        const minutos = Math.floor(diff / 60000);
+        const segundos = Math.floor((diff % 60000) / 1000);
+        return `${minutos}:${segundos.toString().padStart(2, '0')}`;
+    }
+
+    function iniciarCronometros() {
+        setInterval(() => {
+            const pedidosAbertos = pedidos.filter(p => p.status !== 'Entregue' && p.status !== 'Retirado');
+            pedidosAbertos.forEach(pedido => {
+                const elemento = document.getElementById(`cronometro-${pedido.numero}`);
+                if (elemento) {
+                    elemento.innerHTML = `⏱️ ${calcularTempoDecorrido(pedido.timestamp)}`;
+                }
+            });
+        }, 1000);
+    }
+
+    function verDetalhesPedido(numeroPedido) {
+        const pedido = pedidos.find(p => p.numero === numeroPedido);
+        if (!pedido) return;
+
+        let detalhes = `
+═══════════════════════════════════
+PEDIDO #${pedido.numero}
+═══════════════════════════════════
+📅 Data: ${pedido.data} ${pedido.hora}
+👤 Cliente: ${pedido.nome}
+${pedido.cpf ? `📋 CPF: ${pedido.cpf}` : ''}
+📱 Canal: ${pedido.canal}
+📍 Bairro: ${pedido.bairro}
+
+🍕 PIZZAS:
+${pedido.pizzas.map(pizza => `
+  Pizza ${pizza.numero} - ${pizza.tamanho}
+  Sabor: ${pizza.sabor1}${pizza.sabor2 ? ' / ' + pizza.sabor2 : ''}
+  Valor: R$ ${pizza.valorSabores.toFixed(2)}
+  ${pizza.borda ? `Borda: ${pizza.borda} - R$ ${pizza.valorBorda.toFixed(2)}` : ''}
+  ${pizza.complementos.length > 0 ? `Complementos: ${pizza.complementos.map(c => `${c.nome} (${c.qtd}x) - R$ ${c.valor.toFixed(2)}`).join(', ')}` : ''}
+`).join('\n')}
+
+${pedido.bebidas.length > 0 ? `🥤 BEBIDAS:\n${pedido.bebidas.map(b => `  ${b.nome} (${b.qtd}x) - R$ ${b.valor.toFixed(2)}`).join('\n')}` : ''}
+
+💰 VALORES:
+Subtotal: R$ ${pedido.subtotal.toFixed(2)}
+Taxa Entrega: R$ ${pedido.taxaEntrega.toFixed(2)}
+Desconto: R$ ${pedido.desconto.toFixed(2)}
+═══════════════════════════════════
+TOTAL: R$ ${pedido.valorTotal.toFixed(2)}
+═══════════════════════════════════
+💳 Pagamento: ${pedido.pagamento}
+🚚 Entregador Pago: ${pedido.entregadorPago}
+📊 Status: ${pedido.status}
+        `;
+
+        alert(detalhes);
+    }
+
+    // ========== HISTÓRICO ==========
+    function renderHistorico() {
+        const pedidosFinalizados = pedidos.filter(p => p.status === 'Entregue' || p.status === 'Retirado');
+        
+        // Estatísticas
+        const totalVendas = pedidosFinalizados.reduce((sum, p) => sum + p.valorTotal, 0);
+        const ticketMedio = pedidosFinalizados.length > 0 ? totalVendas / pedidosFinalizados.length : 0;
+        const totalPedidos = pedidosFinalizados.length;
+
+        document.getElementById('estatisticas').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-value">${totalPedidos}</div>
+                <div class="stat-label">Pedidos Finalizados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">R$ ${totalVendas.toFixed(2)}</div>
+                <div class="stat-label">Total em Vendas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">R$ ${ticketMedio.toFixed(2)}</div>
+                <div class="stat-label">Ticket Médio</div>
+            </div>
+        `;
+
+        if (pedidosFinalizados.length === 0) {
+            document.getElementById('listaHistorico').innerHTML = '<div class="empty-state"><h3>📭 Nenhum pedido finalizado ainda</h3></div>';
+            return;
+        }
+
+        document.getElementById('listaHistorico').innerHTML = pedidosFinalizados.reverse().map(pedido => {
+            const saboresTexto = pedido.pizzas.map(pizza => {
+                return pizza.sabor2 ? `${pizza.sabor1}/${pizza.sabor2}` : pizza.sabor1;
+            }).join(', ');
+
+            return `
+                <div class="pedido-historico" onclick="toggleDetalhes(${pedido.numero})">
+                    <div class="pedido-historico-header">
+                        <div>
+                            <strong style="font-size: 18px; color: #667eea;">Pedido #${pedido.numero}</strong>
+                            <span style="margin-left: 15px; color: #718096;">${pedido.data} ${pedido.hora}</span>
+                        </div>
+                        <div>
+                            <strong style="font-size: 18px; color: #48bb78;">R$ ${pedido.valorTotal.toFixed(2)}</strong>
+                            <span class="expand-icon" style="margin-left: 10px; font-size: 20px;">▼</span>
+                        </div>
+                    </div>
+                    <div class="pedido-historico-resumo" style="margin-top: 10px;">
+                        <div><strong>Cliente:</strong> ${pedido.nome}</div>
+                        <div><strong>Canal:</strong> ${pedido.canal}</div>
+                        <div><strong>Pagamento:</strong> ${pedido.pagamento}</div>
+                        <div><strong>Status:</strong> ${pedido.status}</div>
+                    </div>
+                    <div class="pedido-historico-detalhes" id="detalhes-${pedido.numero}">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Bairro</div>
+                                <div class="info-value">${pedido.bairro}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Taxa Entrega</div>
+                                <div class="info-value">R$ ${pedido.taxaEntrega.toFixed(2)}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Desconto</div>
+                                <div class="info-value">R$ ${pedido.desconto.toFixed(2)}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Entregador Pago</div>
+                                <div class="info-value">${pedido.entregadorPago}</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <strong>🍕 Pizzas:</strong>
+                            ${pedido.pizzas.map(pizza => `
+                                <div style="margin-left: 20px; margin-top: 10px; padding: 10px; background: white; border-radius: 5px;">
+                                    <div>Pizza ${pizza.numero} - ${pizza.tamanho}</div>
+                                    <div>Sabor: ${pizza.sabor1}${pizza.sabor2 ? ' / ' + pizza.sabor2 : ''}</div>
+                                    ${pizza.borda ? `<div>Borda: ${pizza.borda}</div>` : ''}
+                                    ${pizza.complementos.length > 0 ? `<div>Complementos: ${pizza.complementos.map(c => `${c.nome} (${c.qtd}x)`).join(', ')}</div>` : ''}
+                                    <div><strong>Valor: R$ ${(pizza.valorSabores + pizza.valorBorda + pizza.valorComplementos).toFixed(2)}</strong></div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${pedido.bebidas.length > 0 ? `
+                            <div style="margin-top: 20px;">
+                                <strong>🥤 Bebidas:</strong>
+                                ${pedido.bebidas.map(b => `
+                                    <div style="margin-left: 20px; margin-top: 10px; padding: 10px; background: white; border-radius: 5px;">
+                                        ${b.nome} (${b.qtd}x) - R$ ${b.valor.toFixed(2)}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function toggleDetalhes(numeroPedido) {
+        const elemento = event.currentTarget;
+        elemento.classList.toggle('expanded');
+    }
+
+    // ========== CARDÁPIO ==========
+    function renderCardapio() {
+        renderTabelaSabores();
+        renderTabelaBordas();
+        renderTabelaComplementos();
+        renderTabelaBebidasCardapio();
+    }
+
+    function renderTabelaSabores() {
+        const tabela = document.getElementById('tabelaSabores');
+        tabela.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Sabor</th>
+                    <th>Pequena</th>
+                    <th>Média</th>
+                    <th>Grande</th>
+                    <th>Família</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${sabores.map((sabor, index) => `
+                    <tr>
+                        <td><strong>${sabor.nome}</strong></td>
+                        <td>R$ ${sabor.precos.Pequena.toFixed(2)}</td>
+                        <td>R$ ${sabor.precos.Média.toFixed(2)}</td>
+                        <td>R$ ${sabor.precos.Grande.toFixed(2)}</td>
+                        <td>R$ ${sabor.precos.Família.toFixed(2)}</td>
+                        <td>
+                            <button class="btn-editar" onclick="editarSabor('${sabor.id}')">✏️ Editar</button>
+                            <button class="btn-excluir" onclick="excluirSabor('${sabor.id}')">🗑️ Excluir</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        `;
+    }
+
+    function renderTabelaBordas() {
+        const tabela = document.getElementById('tabelaBordas');
+        tabela.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Borda</th>
+                    <th>Preço</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${bordas.map((borda) => `
+                    <tr>
+                        <td><strong>${borda.nome}</strong></td>
+                        <td>R$ ${borda.preco.toFixed(2)}</td>
+                        <td>
+                            <button class="btn-editar" onclick="editarBorda('${borda.id}')">✏️ Editar</button>
+                            <button class="btn-excluir" onclick="excluirBorda('${borda.id}')">🗑️ Excluir</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        `;
+    }
+
+    function renderTabelaComplementos() {
+        const tabela = document.getElementById('tabelaComplementos');
+        tabela.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Complemento</th>
+                    <th>Preço</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${complementos.map((comp) => `
+                    <tr>
+                        <td><strong>${comp.nome}</strong></td>
+                        <td>R$ ${comp.preco.toFixed(2)}</td>
+                        <td>
+                            <button class="btn-editar" onclick="editarComplemento('${comp.id}')">✏️ Editar</button>
+                            <button class="btn-excluir" onclick="excluirComplemento('${comp.id}')">🗑️ Excluir</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        `;
+    }
+
+    function renderTabelaBebidasCardapio() {
+        const tabela = document.getElementById('tabelaBebidasCardapio');
+        tabela.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Bebida</th>
+                    <th>Preço</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${bebidasCardapio.map((bebida) => `
+                    <tr>
+                        <td><strong>${bebida.nome}</strong></td>
+                        <td>R$ ${bebida.preco.toFixed(2)}</td>
+                        <td>
+                            <button class="btn-editar" onclick="editarBebidaCardapio('${bebida.id}')">✏️ Editar</button>
+                            <button class="btn-excluir" onclick="excluirBebidaCardapio('${bebida.id}')">🗑️ Excluir</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        `;
+    }
+
+    // ========== MODAL CARDÁPIO ==========
+    function abrirModalSabor(id = null) {
+        modalTipo = 'sabor';
+        itemEditando = id;
+        document.getElementById('modalTitulo').textContent = id ? 'Editar Sabor' : 'Adicionar Sabor';
+        
+        const precosContainer = document.getElementById('precosContainer');
+        const sabor = id ? sabores.find(s => s.id === id) : null;
+        
+        document.getElementById('itemNome').value = sabor ? sabor.nome : '';
+        
+        precosContainer.innerHTML = `
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Pequena (R$) *</label>
+                    <input type="number" id="precoPequena" step="0.01" value="${sabor ? sabor.precos.Pequena : ''}" required>
+                </div>
+                <div class="form-group">
+                    <label>Média (R$) *</label>
+                    <input type="number" id="precoMedia" step="0.01" value="${sabor ? sabor.precos.Média : ''}" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Grande (R$) *</label>
+                    <input type="number" id="precoGrande" step="0.01" value="${sabor ? sabor.precos.Grande : ''}" required>
+                </div>
+                <div class="form-group">
+                    <label>Família (R$) *</label>
+                    <input type="number" id="precoFamilia" step="0.01" value="${sabor ? sabor.precos.Família : ''}" required>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('precoUnico').style.display = 'none';
+        precosContainer.style.display = 'block';
+        document.getElementById('modalCardapio').style.display = 'flex';
+    }
+
+    function abrirModalBorda(id = null) {
+        modalTipo = 'borda';
+        itemEditando = id;
+        document.getElementById('modalTitulo').textContent = id ? 'Editar Borda' : 'Adicionar Borda';
+        
+        const borda = id ? bordas.find(b => b.id === id) : null;
+        
+        document.getElementById('itemNome').value = borda ? borda.nome : '';
+        document.getElementById('itemPreco').value = borda ? borda.preco : '';
+        
+        document.getElementById('precosContainer').style.display = 'none';
+        document.getElementById('precoUnico').style.display = 'block';
+        document.getElementById('modalCardapio').style.display = 'flex';
+    }
+
+    function abrirModalComplemento(id = null) {
+        modalTipo = 'complemento';
+        itemEditando = id;
+        document.getElementById('modalTitulo').textContent = id ? 'Editar Complemento' : 'Adicionar Complemento';
+        
+        const comp = id ? complementos.find(c => c.id === id) : null;
+        
+        document.getElementById('itemNome').value = comp ? comp.nome : '';
+        document.getElementById('itemPreco').value = comp ? comp.preco : '';
+        
+        document.getElementById('precosContainer').style.display = 'none';
+        document.getElementById('precoUnico').style.display = 'block';
+        document.getElementById('modalCardapio').style.display = 'flex';
+    }
+
+    function abrirModalBebidaCardapio(id = null) {
+        modalTipo = 'bebida';
+        itemEditando = id;
+        document.getElementById('modalTitulo').textContent = id ? 'Editar Bebida' : 'Adicionar Bebida';
+        
+        const bebida = id ? bebidasCardapio.find(b => b.id === id) : null;
+        
+        document.getElementById('itemNome').value = bebida ? bebida.nome : '';
+        document.getElementById('itemPreco').value = bebida ? bebida.preco : '';
+        
+        document.getElementById('precosContainer').style.display = 'none';
+        document.getElementById('precoUnico').style.display = 'block';
+        document.getElementById('modalCardapio').style.display = 'flex';
+    }
+
+    function fecharModalCardapio() {
+        document.getElementById('modalCardapio').style.display = 'none';
+        document.getElementById('formCardapio').reset();
+        modalTipo = '';
+        itemEditando = null;
+    }
+
+    // ========== SALVAR ITEM CARDÁPIO NO FIREBASE ==========
+    document.getElementById('formCardapio').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const nome = document.getElementById('itemNome').value.trim();
+        
+        try {
+            if (modalTipo === 'sabor') {
+                const dados = {
+                    nome: nome,
+                    precos: {
+                        Pequena: parseFloat(document.getElementById('precoPequena').value),
+                        Média: parseFloat(document.getElementById('precoMedia').value),
+                        Grande: parseFloat(document.getElementById('precoGrande').value),
+                        Família: parseFloat(document.getElementById('precoFamilia').value)
+                    }
+                };
+                
+                if (itemEditando) {
+                    await window.firestore.updateDoc(
+                        window.firestore.doc(window.db, 'sabores', itemEditando),
+                        dados
+                    );
+                } else {
+                    await window.firestore.addDoc(
+                        window.firestore.collection(window.db, 'sabores'),
+                        dados
+                    );
+                }
+            } else {
+                const preco = parseFloat(document.getElementById('itemPreco').value);
+                const dados = { nome, preco };
+                
+                let colecao = '';
+                if (modalTipo === 'borda') colecao = 'bordas';
+                else if (modalTipo === 'complemento') colecao = 'complementos';
+                else if (modalTipo === 'bebida') colecao = 'bebidas';
+                
+                if (itemEditando) {
+                    await window.firestore.updateDoc(
+                        window.firestore.doc(window.db, colecao, itemEditando),
+                        dados
+                    );
+                } else {
+                    await window.firestore.addDoc(
+                        window.firestore.collection(window.db, colecao),
+                        dados
+                    );
+                }
+            }
+            
+            await carregarDadosFirebase();
+            renderCardapio();
+            fecharModalCardapio();
+            alert('✅ Item salvo com sucesso!');
+        } catch (error) {
+            console.error('Erro ao salvar item:', error);
+            alert('❌ Erro ao salvar item. Verifique o console.');
+        }
+    });
+
+    // ========== EDITAR ITENS ==========
+    function editarSabor(id) {
+        abrirModalSabor(id);
+    }
+
+    function editarBorda(id) {
+        abrirModalBorda(id);
+    }
+
+    function editarComplemento(id) {
+        abrirModalComplemento(id);
+    }
+
+    function editarBebidaCardapio(id) {
+        abrirModalBebidaCardapio(id);
+    }
+
+    // ========== EXCLUIR ITENS DO FIREBASE ==========
+    async function excluirSabor(id) {
+        if (!confirm('Tem certeza que deseja excluir este sabor?')) return;
+        
+        try {
+            await window.firestore.deleteDoc(
+                window.firestore.doc(window.db, 'sabores', id)
+            );
+            await carregarDadosFirebase();
+            renderCardapio();
+            alert('✅ Sabor excluído com sucesso!');
+        } catch (error) {
+            console.error('Erro ao excluir sabor:', error);
+            alert('❌ Erro ao excluir sabor.');
+        }
+    }
+
+    async function excluirBorda(id) {
+        if (!confirm('Tem certeza que deseja excluir esta borda?')) return;
+        
+        try {
+            await window.firestore.deleteDoc(
+                window.firestore.doc(window.db, 'bordas', id)
+            );
+            await carregarDadosFirebase();
+            renderCardapio();
+            alert('✅ Borda excluída com sucesso!');
+        } catch (error) {
+            console.error('Erro ao excluir borda:', error);
+            alert('❌ Erro ao excluir borda.');
+        }
+    }
+
+    async function excluirComplemento(id) {
+        if (!confirm('Tem certeza que deseja excluir este complemento?')) return;
+        
+        try {
+            await window.firestore.deleteDoc(
+                window.firestore.doc(window.db, 'complementos', id)
+            );
+            await carregarDadosFirebase();
+            renderCardapio();
+            alert('✅ Complemento excluído com sucesso!');
+        } catch (error) {
+            console.error('Erro ao excluir complemento:', error);
+            alert('❌ Erro ao excluir complemento.');
+        }
+    }
+
+    async function excluirBebidaCardapio(id) {
+        if (!confirm('Tem certeza que deseja excluir esta bebida?')) return;
+        
+        try {
+            await window.firestore.deleteDoc(
+                window.firestore.doc(window.db, 'bebidas', id)
+            );
+            await carregarDadosFirebase();
+            renderCardapio();
+            alert('✅ Bebida excluída com sucesso!');
+        } catch (error) {
+            console.error('Erro ao excluir bebida:', error);
+            alert('❌ Erro ao excluir bebida.');
+        }
+    }
+
+    // ========== TIPO DE DESCONTO ==========
+    function toggleDesconto() {
+        const tipo = document.querySelector('input[name="tipoDesconto"]:checked').value;
+        document.getElementById('descontoPorcentagem').disabled = (tipo !== 'porcentagem');
+        document.getElementById('descontoValor').disabled = (tipo !== 'valor');
+        calcularTotal();
+    }
+
+    // ========== INICIALIZAÇÃO ==========
+    window.addEventListener('load', async function() {
+        await carregarDadosFirebase();
+        adicionarPizza();
+        iniciarCronometros();
+        renderPedidosAbertos();
+        console.log('🚀 Sistema inicializado com Firebase!');
+    });
+</script>
+
 </body>
 </html>
+                 
